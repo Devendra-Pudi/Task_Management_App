@@ -1,5 +1,5 @@
 import axios from "axios";
-const API_URL = "http://localhost:5000/api";
+const API_URL = "https://task-management-app-ildg.onrender.com";
 const token = () => localStorage.getItem("token");
 
 const api = {
