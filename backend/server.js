@@ -26,7 +26,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/feedback', feedbackRoutes);
 
 // Connect to MongoDB with proper error handling
-mongoose.connect(MONGO_URI)
+mongoose.openUri(MONGO_URI)
   .then(() => console.log('✅ Connected to MongoDB'))
   .catch((err) => {
     console.error('❌ Failed to connect to MongoDB:', err.message);
