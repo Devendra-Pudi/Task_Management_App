@@ -10,7 +10,7 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://pudidevendraprasad:YEUepp1gHEsUlCdW@clustertask.njxorpt.mongodb.net/?retryWrites=true&w=majority&appName=ClusterTask';
 
 // Middleware to handle CORS and JSON parsing
 app.use(cors());
