@@ -13,7 +13,7 @@ export default function Register() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("https://task-management-app-omega-tawny.vercel.app/api/auth/signup", form);
+      const res = await axios.post("https://task-management-app-ildg.onrender.com/api/auth/signup", form);
       localStorage.setItem("token", res.data.token);
       navigate("/");
     } catch (err) {
