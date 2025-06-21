@@ -10,12 +10,17 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/taskapp';
+const MONGO_URI = process.env.MONGO_URI;
 
 // Middleware to handle CORS and JSON parsing
 app.use(cors());
 app.use(express.json());
 
+
+app.use(cors({
+  origin: "https://task-management-app-omega-tawny.vercel.app", // exact Vercel frontend URL
+  credentials: true
+}));
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/feedback', feedbackRoutes);
