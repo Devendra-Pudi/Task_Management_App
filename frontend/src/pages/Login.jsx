@@ -7,20 +7,24 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
     try {
       await login(email, password);
       toast.success('Login successful!');
       navigate("/dashboard");
     } catch (err) {
-      const errorMessage = err.response?.data?.error || "Login failed";
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || "Login failed";
       setError(errorMessage);
       toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,6 +47,7 @@ export default function Login() {
             value={email}
             onChange={e => setEmail(e.target.value)}
             required
+            disabled={isLoading}
           />
           <input
             className="w-full mb-6 p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -51,9 +56,14 @@ export default function Login() {
             value={password}
             onChange={e => setPassword(e.target.value)}
             required
+            disabled={isLoading}
           />
-          <button className="btn-primary w-full mb-2" type="submit">
-            Login
+          <button 
+            className={`btn-primary w-full mb-2 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`} 
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Signing in...' : 'Sign In'}
           </button>
           <p className="text-center text-sm mt-4">
             Don&apos;t have an account?{" "}
@@ -61,6 +71,7 @@ export default function Login() {
               type="button"
               onClick={() => navigate('/register')}
               className="text-blue-600 hover:text-blue-800 underline font-medium"
+              disabled={isLoading}
             >
               Register
             </button>
