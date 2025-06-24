@@ -3,11 +3,13 @@ import { AuthContext } from '../context/AuthContext';
 import api from '../api';
 import KanbanBoard from '../components/KanbanBoard';
 import { toast } from 'react-hot-toast';
+import AddTaskModal from '../components/AddTaskModal';
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -32,6 +34,22 @@ const Dashboard = () => {
       toast.error('Failed to load tasks');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddTask = async (taskData) => {
+    try {
+      const response = await api.post('/tasks', taskData);
+      if (response.data.success) {
+        setTasks([...tasks, response.data.data]);
+        toast.success('Task added successfully');
+        setIsModalOpen(false);
+      } else {
+        toast.error(response.data.error || 'Failed to add task');
+      }
+    } catch (err) {
+      console.error('Error adding task:', err.response || err);
+      toast.error(err.response?.data?.error || 'Failed to add task');
     }
   };
 
@@ -75,8 +93,18 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50 pt-16">
       <div className="bg-white shadow-sm">
         <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome back, {user?.username || 'User'}!</p>
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
+              <p className="text-gray-600 mt-1">Welcome back, {user?.username || 'User'}!</p>
+            </div>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-sm transition-colors duration-200"
+            >
+              Add New Task
+            </button>
+          </div>
         </div>
       </div>
 
@@ -102,6 +130,13 @@ const Dashboard = () => {
           )}
         </div>
       </div>
+
+      {isModalOpen && (
+        <AddTaskModal
+          onClose={() => setIsModalOpen(false)}
+          onAdd={handleAddTask}
+        />
+      )}
     </div>
   );
 };
