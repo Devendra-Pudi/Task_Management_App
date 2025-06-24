@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 // (motion is used throughout the component, so this import is necessary)
 import { Send, Mail, User, MessageSquare, CheckCircle } from 'lucide-react';
-import axios from 'axios';
 import toast from 'react-hot-toast';
+import api from '../services/api';
 
 const FeedbackForm = () => {
   const [formData, setFormData] = useState({
@@ -27,7 +27,7 @@ const FeedbackForm = () => {
     setIsSubmitting(true);
 
     try {
-      await axios.post('http://localhost:5000/api/feedback', formData);
+      await api.sendFeedback(formData);
       setIsSubmitted(true);
       toast.success('🎉 Thank you for your feedback!');
       setTimeout(() => {
@@ -36,7 +36,7 @@ const FeedbackForm = () => {
       }, 3000);
     } catch (error) {
       console.error('Error sending feedback:', error);
-      toast.error('😞 Failed to send feedback. Please try again.');
+      toast.error(error.message || '😞 Failed to send feedback. Please try again.');
     } finally {
       setIsSubmitting(false);
     }

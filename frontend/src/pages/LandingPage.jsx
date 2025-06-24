@@ -1,8 +1,7 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import Navbar from '../components/Navbar.jsx';
 import FeedbackForm from '../components/FeedbackForm.jsx';
-import { ArrowRight, Star, CheckCircle, Users, Clock, Zap } from 'lucide-react';
+import { ArrowRight, Star, CheckCircle, Users, Clock, Zap, Github, Linkedin, Mail, Globe } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
 
 
@@ -65,8 +64,6 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <Navbar />
-
       {/* Hero Section */}
       <motion.section 
         className="relative min-h-screen flex items-center justify-center overflow-hidden"
@@ -262,6 +259,90 @@ const LandingPage = () => {
       {/* Feedback Form Section */}
       <div id="feedbackFormComponent">
       <FeedbackForm /> </div>
+
+      {/* Footer Section */}
+      <footer className="bg-white py-12 border-t border-gray-100">
+        <div className="container mx-auto px-6">
+          <div className="flex flex-col items-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="flex flex-col items-center"
+            >
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
+                Task Magic ✨
+              </h3>
+              <p className="text-gray-600 mb-6 text-center">
+                Making task management magical, one task at a time.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className="flex space-x-6 mb-8"
+            >
+              <a
+                href="https://github.com/Devendra-Pudi"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300"
+              >
+                <Github className="w-6 h-6" />
+              </a>
+              <a
+                href="https://www.linkedin.com/in/devendra-prasad-pudi/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300"
+              >
+                <Linkedin className="w-6 h-6" />
+              </a>
+              <a
+                href="mailto:pudidevendraprasad@gmail.com"
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300"
+              >
+                <Mail className="w-6 h-6" />
+              </a>
+              <a
+                href="https://devendrapudi.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300"
+              >
+                <Globe className="w-6 h-6" />
+              </a>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="text-center"
+            >
+              <p className="text-gray-500 text-sm">
+                © {new Date().getFullYear()} Task Magic. All rights reserved.
+              </p>
+              <p className="text-gray-500 text-sm mt-2">
+                Developed with 💖 by{" "}
+                <a
+                  href="https://linkedin.com/in/devendra-pudi"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:text-blue-800 font-medium"
+                >
+                  Devendra Pudi
+                </a>
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };
