@@ -2,6 +2,20 @@
 
 TaskMagic is a full-stack task management application built with the MERN stack (MongoDB, Express.js, React, Node.js). It offers a beautiful, intuitive interface for managing tasks with features like drag-and-drop organization, real-time updates, and team collaboration.
 
+## 🎯 Introduction
+
+TaskMagic revolutionizes the way you manage tasks and projects. With its modern interface and powerful features, it helps individuals and teams stay organized, meet deadlines, and boost productivity. The application combines the best of Kanban-style organization with intuitive task management, making it perfect for both personal and professional use.
+
+## 🌐 Live Demo
+
+Experience TaskMagic in action:
+- **Live Site**: [TaskMagic App](https://taskmagic-app-devendra-pudi.netlify.app)
+- **Demo Account**:
+  - Email: demo@taskmagic.com
+  - Password: demo123
+
+![TaskMagic Dashboard](frontend/public/image.png)
+
 ![TaskMagic Logo](frontend/public/task.png)
 
 ## 🌟 Features
