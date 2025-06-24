@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from 'react-hot-toast';
+import API from '../api';
 
 export default function Register() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
@@ -14,12 +14,13 @@ export default function Register() {
     e.preventDefault();
     setError("");
     try {
-      await axios.post("http://localhost:5000/api/auth/signup", form);
+      await API.post("/auth/signup", form);
       toast.success('Registration successful! Please login.');
       navigate("/login");
     } catch (err) {
-      setError(err.response?.data?.error || "Registration failed");
-      toast.error(err.response?.data?.error || "Registration failed");
+      const errorMessage = err.response?.data?.error || err.response?.data?.message || "Registration failed";
+      setError(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
