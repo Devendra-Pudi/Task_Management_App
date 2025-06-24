@@ -20,7 +20,7 @@ VITE_APP_ENV=production
 ## 3. Update Backend (Render.com)
 ```env
 # Update FRONTEND_URL after getting Netlify URL
-FRONTEND_URL=https://your-app-xyz.netlify.app  # Your actual Netlify URL
+FRONTEND_URL=https://taskmagic-app-devendra-pudi.netlify.app  # Your actual Netlify URL
 ```
 
 ## Steps in Order:
@@ -32,7 +32,7 @@ FRONTEND_URL=https://your-app-xyz.netlify.app  # Your actual Netlify URL
 2. **Deploy Frontend**
    - Add backend URL to frontend env vars
    - Deploy to Netlify
-   - Get your frontend URL (e.g., `https://taskmagic-xyz.netlify.app`)
+   - Get your frontend URL (e.g., `https://taskmagic-app-devendra-pudi.netlify.app`)
 
 3. **Update Backend**
    - Go to Render.com dashboard
