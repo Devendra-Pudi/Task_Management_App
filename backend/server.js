@@ -13,7 +13,12 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/taskapp';
+const MONGODB_URL = process.env.MONGODB_URL || process.env.MONGO_URI;
+
+if (!MONGODB_URL) {
+  console.error('❌ No MongoDB connection string provided in environment variables!');
+  process.exit(1);
+}
 
 // Start uptime robot in production
 if (process.env.NODE_ENV === 'production') {
@@ -81,43 +86,38 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Connect to MongoDB with proper error handling
-mongoose.connect(MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000,
-  retryWrites: true,
-})
-.then(() => console.log('✅ Connected to MongoDB'))
-.catch((err) => {
-  console.error('❌ Failed to connect to MongoDB:', err.message);
-  process.exit(1);
-});
+// Connect to MongoDB
+connectDB()
+  .then(() => {
+    // Start the server only after successful DB connection
+    const server = app.listen(PORT, () => {
+      console.log(`🚀 Server is running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+    });
+
+    // Graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM signal received. Closing HTTP server...');
+      server.close(() => {
+        console.log('HTTP server closed');
+        mongoose.connection.close(false, () => {
+          console.log('MongoDB connection closed');
+          process.exit(0);
+        });
+      });
+    });
+
+    // Handle unhandled promise rejections
+    process.on('unhandledRejection', (err) => {
+      console.error('Unhandled Promise Rejection:', err);
+      server.close(() => process.exit(1));
+    });
+  })
+  .catch((err) => {
+    console.error('❌ Failed to start server:', err);
+    process.exit(1);
+  });
 
 // A simple test route
 app.get('/', (req, res) => {
   res.send('Hello! Your task app backend is working! 🎉');
-});
-
-// Start the server
-const server = app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-});
-
-// Graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received. Closing HTTP server...');
-  server.close(() => {
-    console.log('HTTP server closed');
-    mongoose.connection.close(false, () => {
-      console.log('MongoDB connection closed');
-      process.exit(0);
-    });
-  });
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('Unhandled Promise Rejection:', err);
-  server.close(() => process.exit(1));
 });

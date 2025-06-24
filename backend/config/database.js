@@ -6,9 +6,11 @@ const connectDB = async () => {
 
   const connect = async () => {
     try {
+      if (!process.env.MONGODB_URL) {
+        throw new Error('MongoDB connection string is not provided in environment variables');
+      }
+
       await mongoose.connect(process.env.MONGODB_URL, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
         retryWrites: true,
@@ -16,7 +18,7 @@ const connectDB = async () => {
       });
       console.log('✅ MongoDB connected successfully!');
     } catch (error) {
-      console.error('❌ MongoDB connection error:', error);
+      console.error('❌ MongoDB connection error:', error.message);
       retryCount++;
       
       if (retryCount < maxRetries) {
@@ -25,7 +27,7 @@ const connectDB = async () => {
         return connect();
       } else {
         console.error('Failed to connect to MongoDB after maximum retries');
-        process.exit(1);
+        throw error; // Propagate the error up
       }
     }
   };
@@ -34,14 +36,18 @@ const connectDB = async () => {
   mongoose.connection.on('disconnected', () => {
     console.log('MongoDB disconnected!');
     if (process.env.NODE_ENV === 'production') {
-      connect(); // Attempt to reconnect in production
+      connect().catch(err => {
+        console.error('Failed to reconnect after disconnect:', err);
+      });
     }
   });
 
   mongoose.connection.on('error', (err) => {
     console.error('MongoDB connection error:', err);
     if (process.env.NODE_ENV === 'production') {
-      connect(); // Attempt to reconnect in production
+      connect().catch(err => {
+        console.error('Failed to reconnect after error:', err);
+      });
     }
   });
 
