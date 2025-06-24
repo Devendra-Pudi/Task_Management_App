@@ -1,28 +1,22 @@
 import axios from 'axios';
 
-// Remove /api from the end of the URL if it exists to avoid double /api
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-const API_URL = BASE_URL.endsWith('/api') ? BASE_URL : `${BASE_URL}/api`;
-
-const API = axios.create({
-  baseURL: API_URL,
-  timeout: 10000,
+const api = axios.create({
+  baseURL: 'https://task-management-app-1-nmv7.onrender.com/api',
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
+  withCredentials: true
 });
 
 // Add request interceptor for authentication
-API.interceptors.request.use(
+api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    // Log the full URL in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('API Request URL:', `${API_URL}${config.url}`);
-    }
+    // Add origin header
+    config.headers.Origin = 'https://fantastic-centaur-20d040.netlify.app';
     return config;
   },
   (error) => {
@@ -31,21 +25,41 @@ API.interceptors.request.use(
 );
 
 // Add response interceptor for error handling
-API.interceptors.response.use(
+api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+    if (error.response) {
+      // Handle specific error cases
+      switch (error.response.status) {
+        case 401:
+          // Unauthorized - clear token and redirect to login
+          localStorage.removeItem('token');
+          window.location.href = '/login';
+          break;
+        case 403:
+          // Forbidden
+          console.error('Access forbidden');
+          break;
+        case 404:
+          // Not found
+          console.error('Resource not found');
+          break;
+        case 500:
+          // Server error
+          console.error('Server error');
+          break;
+        default:
+          console.error('API Error:', error.response.data);
+      }
+    } else if (error.request) {
+      // Request made but no response
+      console.error('No response received:', error.request);
+    } else {
+      // Error in request configuration
+      console.error('Request error:', error.message);
     }
-    console.error('API Error:', {
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message,
-      endpoint: error.config?.url,
-      fullUrl: error.config?.baseURL + error.config?.url
-    });
     return Promise.reject(error);
   }
 );
 
-export default API;
+export default api;

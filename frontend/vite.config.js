@@ -10,17 +10,11 @@ export default defineConfig(({ command, mode }) => {
   return {
     plugins: [react()],
     server: {
-      port: 3000,
-      proxy: mode === 'development' ? {
-        '/api': {
-          target: env.VITE_API_URL || 'http://localhost:5000',
-          changeOrigin: true,
-          secure: false,
-          rewrite: (path) => path.replace(/^\/api/, '')
-        }
-      } : {}
+      port: 3000
     },
     build: {
+      outDir: 'dist',
+      sourcemap: true,
       minify: 'terser',
       terserOptions: {
         compress: {
