@@ -6,7 +6,7 @@ export default defineConfig(({ command, mode }) => {
   // Load env file based on `mode` in the current working directory.
   const env = loadEnv(mode, process.cwd(), '');
 
-  const config = {
+  return {
     plugins: [react()],
     server: {
       port: 3000,
@@ -19,14 +19,7 @@ export default defineConfig(({ command, mode }) => {
         }
       } : {}
     },
-    define: {
-      __APP_ENV__: JSON.stringify(env.VITE_APP_ENV)
-    }
-  };
-
-  if (command === 'build') {
-    config.build = {
-      // Production optimizations
+    build: {
       minify: 'terser',
       terserOptions: {
         compress: {
@@ -44,8 +37,9 @@ export default defineConfig(({ command, mode }) => {
         }
       },
       chunkSizeWarningLimit: 1000
-    };
-  }
-
-  return config;
+    },
+    define: {
+      __APP_ENV__: JSON.stringify(env.VITE_APP_ENV)
+    }
+  };
 });
