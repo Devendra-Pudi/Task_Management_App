@@ -30,10 +30,11 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // CORS Configuration
-const ALLOWED_ORIGINS = [
-  'https://fantastic-centaur-20d040.netlify.app',
-  'http://localhost:5173', // Vite's default development port
-  'http://localhost:3000'  // Alternative development port
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'https://taskmagic-app-devendra-pudi.netlify.app',
+  'https://task-management-app-1-nmv7.onrender.com'
 ];
 
 // Basic middleware
@@ -68,7 +69,7 @@ app.use((req, res, next) => {
     method: req.method,
     url: req.url,
     origin: req.headers.origin,
-    allowedOrigin: ALLOWED_ORIGINS,
+    allowedOrigin: allowedOrigins,
     ip: req.ip,
     'x-forwarded-for': req.headers['x-forwarded-for'],
     'content-type': req.headers['content-type'],
@@ -92,7 +93,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
   const origin = req.headers.origin;
 
-  if (ALLOWED_ORIGINS.includes(origin)) {
+  if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
@@ -170,7 +171,7 @@ app.get('/health', (req, res) => {
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development',
     cors: {
-      allowedOrigin: ALLOWED_ORIGINS
+      allowedOrigin: allowedOrigins
     },
     proxy: {
       trusted: app.get('trust proxy'),
@@ -221,7 +222,7 @@ connectDB()
   .then(() => {
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-      console.log(`🔒 CORS configured for origin: ${ALLOWED_ORIGINS}`);
+      console.log(`🔒 CORS configured for origin: ${allowedOrigins}`);
       console.log('👥 Trust proxy enabled:', app.get('trust proxy'));
     });
 

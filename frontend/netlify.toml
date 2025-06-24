@@ -9,7 +9,7 @@ status = 200
 force = true
 
 [redirects.headers]
-Access-Control-Allow-Origin = "https://fantastic-centaur-20d040.netlify.app"
+Access-Control-Allow-Origin = "https://taskmagic-app-devendra-pudi.netlify.app"
 Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
 Access-Control-Allow-Headers = "Content-Type, Authorization, X-Requested-With, Accept"
 Access-Control-Allow-Credentials = "true"
@@ -30,6 +30,6 @@ X-Frame-Options = "DENY"
 X-XSS-Protection = "1; mode=block"
 X-Content-Type-Options = "nosniff"
 Referrer-Policy = "strict-origin-when-cross-origin"
-Access-Control-Allow-Origin = "https://fantastic-centaur-20d040.netlify.app"
+Access-Control-Allow-Origin = "https://taskmagic-app-devendra-pudi.netlify.app"
 Access-Control-Allow-Methods = "GET, POST, PUT, DELETE, OPTIONS"
 Access-Control-Allow-Headers = "Origin, X-Requested-With, Content-Type, Accept, Authorization" 
