@@ -4,7 +4,7 @@ import { Menu, X, Sparkles, LogOut, Home, Plus } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import AddTaskModal from './AddTaskModal';
-import api from '../services/api';
+import api from '../api';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);

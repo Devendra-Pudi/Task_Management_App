@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 // (motion is used throughout the component, so this import is necessary)
 import { Send, Mail, User, MessageSquare, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import api from '../services/api';
+import api from '../api';
 
 const FeedbackForm = () => {
   const [formData, setFormData] = useState({
@@ -27,7 +27,7 @@ const FeedbackForm = () => {
     setIsSubmitting(true);
 
     try {
-      await api.sendFeedback(formData);
+      await api.post('/feedback', formData);
       setIsSubmitted(true);
       toast.success('🎉 Thank you for your feedback!');
       setTimeout(() => {
@@ -35,8 +35,8 @@ const FeedbackForm = () => {
         setFormData({ name: '', email: '', subject: '', message: '' });
       }, 3000);
     } catch (error) {
-      console.error('Error sending feedback:', error);
-      toast.error(error.message || '😞 Failed to send feedback. Please try again.');
+      console.error('Error submitting feedback:', error);
+      toast.error(error.message || '😞 Failed to submit feedback. Please try again later.');
     } finally {
       setIsSubmitting(false);
     }
