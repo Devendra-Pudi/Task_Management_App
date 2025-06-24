@@ -43,26 +43,26 @@ const TaskCard = memo(({ task, onUpdate, onDelete, draggable, onDragStart }) => 
   };
 
   const priorityColors = {
-    Low: 'bg-green-100 text-green-800',
-    Medium: 'bg-yellow-100 text-yellow-800',
-    High: 'bg-red-100 text-red-800'
+    Low: 'bg-green-100 text-green-700',
+    Medium: 'bg-yellow-100 text-yellow-700',
+    High: 'bg-red-100 text-red-700'
   };
 
   if (isEditing) {
     return (
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+      <div className="bg-white p-3 rounded shadow">
         <input
           type="text"
           value={editedTitle}
           onChange={(e) => setEditedTitle(e.target.value)}
-          className="w-full mb-2 p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full mb-2 p-2 border rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Task title"
           autoFocus
         />
         <textarea
           value={editedDescription}
           onChange={(e) => setEditedDescription(e.target.value)}
-          className="w-full mb-3 p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full mb-2 p-2 border rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Task description"
           rows="2"
         />
@@ -75,7 +75,7 @@ const TaskCard = memo(({ task, onUpdate, onDelete, draggable, onDragStart }) => 
           </button>
           <button
             onClick={handleEditSave}
-            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+            className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             Save
           </button>
@@ -86,18 +86,18 @@ const TaskCard = memo(({ task, onUpdate, onDelete, draggable, onDragStart }) => 
 
   return (
     <div
-      className={`bg-white p-4 rounded-lg shadow-sm border border-gray-200 ${
+      className={`bg-white p-3 rounded shadow ${
         isDeleting ? 'opacity-50' : ''
       }`}
       draggable={draggable}
       onDragStart={onDragStart}
     >
       <div className="flex justify-between items-start mb-2">
-        <h3 className="font-medium text-gray-900">{task.title}</h3>
+        <h3 className="font-medium text-gray-800">{task.title}</h3>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsEditing(true)}
-            className="text-gray-400 hover:text-blue-600"
+            className="text-gray-400 hover:text-blue-500"
             disabled={isDeleting}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -106,7 +106,7 @@ const TaskCard = memo(({ task, onUpdate, onDelete, draggable, onDragStart }) => 
           </button>
           <button
             onClick={handleDelete}
-            className="text-gray-400 hover:text-red-600"
+            className="text-gray-400 hover:text-red-500"
             disabled={isDeleting}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -116,7 +116,7 @@ const TaskCard = memo(({ task, onUpdate, onDelete, draggable, onDragStart }) => 
         </div>
       </div>
       {task.description && (
-        <p className="text-sm text-gray-600 mb-3">{task.description}</p>
+        <p className="text-sm text-gray-600 mb-2">{task.description}</p>
       )}
       <div className="flex justify-between items-center">
         <span

@@ -24,21 +24,18 @@ const KanbanBoard = memo(({ tasks, onUpdateTask, onDeleteTask }) => {
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {columns.map((column) => (
         <div
           key={column}
-          className="bg-gray-50 rounded-xl p-4"
+          className="bg-gray-100 rounded-lg p-4"
           onDragOver={handleDragOver}
           onDrop={(e) => handleDrop(e, column)}
         >
-          <h2 className="text-lg font-semibold mb-4 text-gray-700 flex items-center justify-between">
+          <h2 className="text-lg font-semibold mb-4 text-gray-700">
             {column}
-            <span className="text-sm font-normal text-gray-500">
-              {tasks.filter(task => task.status === column).length} tasks
-            </span>
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {tasks
               .filter((task) => task.status === column)
               .map((task) => (
