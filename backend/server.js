@@ -33,32 +33,69 @@ if (process.env.NODE_ENV === 'production') {
 const ALLOWED_ORIGIN = 'https://fantastic-centaur-20d040.netlify.app';
 
 // Basic middleware
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ 
+  limit: '10mb',
+  verify: (req, res, buf) => {
+    try {
+      JSON.parse(buf);
+    } catch (e) {
+      res.status(400).json({ 
+        success: false, 
+        message: 'Invalid JSON payload',
+        error: process.env.NODE_ENV === 'development' ? e.message : undefined
+      });
+      throw new Error('Invalid JSON');
+    }
+  }
+}));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(compression());
 
-// Simple CORS middleware
+// Request logging middleware
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  
-  // Log the incoming request details
-  console.log('Request details:', {
+  const requestStart = Date.now();
+  const requestId = Math.random().toString(36).substring(7);
+
+  // Log request details
+  console.log(`📥 [${requestId}] Incoming ${req.method} request to ${req.url}`);
+  console.log({
+    id: requestId,
+    timestamp: new Date().toISOString(),
     method: req.method,
     url: req.url,
-    origin: origin,
+    origin: req.headers.origin,
     allowedOrigin: ALLOWED_ORIGIN,
     ip: req.ip,
-    'x-forwarded-for': req.headers['x-forwarded-for']
+    'x-forwarded-for': req.headers['x-forwarded-for'],
+    'content-type': req.headers['content-type'],
+    body: req.method !== 'GET' ? req.body : undefined
   });
+
+  // Log response on finish
+  res.on('finish', () => {
+    const duration = Date.now() - requestStart;
+    console.log(`📤 [${requestId}] Response sent:`, {
+      statusCode: res.statusCode,
+      duration: `${duration}ms`,
+      headers: res.getHeaders()
+    });
+  });
+
+  next();
+});
+
+// CORS middleware
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
 
   if (origin === ALLOWED_ORIGIN) {
     res.setHeader('Access-Control-Allow-Origin', ALLOWED_ORIGIN);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
   }
 
-  // Handle preflight
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
   }
@@ -76,9 +113,13 @@ app.use(helmet({
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  standardHeaders: true,
+  legacyHeaders: false,
   handler: (req, res) => {
+    console.log('⚠️ Rate limit exceeded:', {
+      ip: req.ip,
+      'x-forwarded-for': req.headers['x-forwarded-for']
+    });
     res.status(429).json({
       success: false,
       message: 'Too many requests, please try again later.'
@@ -89,10 +130,33 @@ const limiter = rateLimit({
 // Apply rate limiting to API routes
 app.use('/api/', limiter);
 
-// API routes
-app.use('/api/auth', authRoutes);
-app.use('/api/tasks', taskRoutes);
-app.use('/api/feedback', feedbackRoutes);
+// API routes with error handling
+app.use('/api/auth', (req, res, next) => {
+  try {
+    authRoutes(req, res, next);
+  } catch (error) {
+    console.error('❌ Auth route error:', error);
+    next(error);
+  }
+});
+
+app.use('/api/tasks', (req, res, next) => {
+  try {
+    taskRoutes(req, res, next);
+  } catch (error) {
+    console.error('❌ Tasks route error:', error);
+    next(error);
+  }
+});
+
+app.use('/api/feedback', (req, res, next) => {
+  try {
+    feedbackRoutes(req, res, next);
+  } catch (error) {
+    console.error('❌ Feedback route error:', error);
+    next(error);
+  }
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -108,16 +172,42 @@ app.get('/health', (req, res) => {
       trusted: app.get('trust proxy'),
       ip: req.ip,
       'x-forwarded-for': req.headers['x-forwarded-for']
-    }
+    },
+    memory: process.memoryUsage()
   });
 });
 
-// Error handling middleware
+// Global error handling middleware
 app.use((err, req, res, next) => {
-  console.error('❌ Error:', err);
+  console.error('❌ Global error handler:', {
+    error: err,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+    body: req.body,
+    headers: req.headers
+  });
+
+  // Handle specific types of errors
+  if (err.name === 'ValidationError') {
+    return res.status(400).json({
+      success: false,
+      message: 'Validation error',
+      errors: Object.values(err.errors).map(e => e.message)
+    });
+  }
+
+  if (err.name === 'MongoError' && err.code === 11000) {
+    return res.status(409).json({
+      success: false,
+      message: 'Duplicate key error',
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+
   res.status(err.status || 500).json({
     success: false,
-    message: 'An internal server error occurred',
+    message: err.message || 'An internal server error occurred',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
 });
