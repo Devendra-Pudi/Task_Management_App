@@ -152,18 +152,38 @@ Experience TaskMagic in action:
 
 ## 🌐 Deployment
 
-### Backend Deployment (Railway.app)
-1. Create a Railway.app account
-2. Connect your GitHub repository
-3. Set up environment variables in Railway dashboard
-4. Deploy the backend service
+### Backend Deployment (Render)
+1. Create a [Render](https://render.com) account
+2. Create a new Web Service
+3. Connect your GitHub repository
+4. Configure the service:
+   - Environment: `Node.js`
+   - Build Command: `npm install`
+   - Start Command: `npm start`
+5. Set up environment variables in Render dashboard:
+   ```
+   NODE_ENV=production
+   PORT=10000
+   MONGODB_URI=your_mongodb_uri
+   JWT_SECRET=your_jwt_secret
+   FRONTEND_URL=https://taskmagic-app-devendra-pudi.netlify.app
+   ```
+6. Deploy the backend service
 
-### Frontend Deployment (Vercel)
-1. Create a Vercel account
+### Frontend Deployment (Netlify)
+1. Create a [Netlify](https://netlify.app) account
 2. Import your GitHub repository
-3. Configure build settings
-4. Set up environment variables
+3. Configure build settings:
+   - Base directory: `frontend`
+   - Build command: `npm run build`
+   - Publish directory: `frontend/dist`
+4. Set up environment variables:
+   ```
+   VITE_API_URL=https://task-management-app-1-nmv7.onrender.com/api
+   VITE_APP_ENV=production
+   ```
 5. Deploy the frontend application
+6. Configure custom domain (optional)
 
 ## 📝 API Documentation
 
