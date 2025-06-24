@@ -15,6 +15,11 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/taskapp';
 
+// Start uptime robot in production
+if (process.env.NODE_ENV === 'production') {
+  require('./uptimerobot');
+}
+
 // Security and optimization middleware
 app.use(helmet());
 app.use(compression());
