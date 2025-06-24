@@ -61,8 +61,8 @@ const Contact = () => {
     {
       icon: <MapPin className="w-6 h-6" />,
       title: "Address",
-      info: "123 Task Street, Magic City, MC 12345",
-      link: "https://maps.google.com"
+      info: " Bhimavaram, Andhra Pradesh, India",
+      link: "https://maps.google.com/Bhimavaram"
     }
   ];
 
