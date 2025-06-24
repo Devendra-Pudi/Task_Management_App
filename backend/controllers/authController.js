@@ -17,9 +17,16 @@ const generateToken = (userId) => {
 exports.signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    
+    console.log('Registration attempt:', { name, email, hasPassword: !!password });
 
     // Validate input
     if (!name || !email || !password) {
+      console.log('Missing required fields:', { 
+        name: !name, 
+        email: !email, 
+        password: !password 
+      });
       return res.status(400).json({
         success: false,
         message: 'Please provide all required fields'

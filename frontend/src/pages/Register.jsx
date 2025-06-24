@@ -4,7 +4,7 @@ import { toast } from 'react-hot-toast';
 import api from '../api';
 
 export default function Register() {
-  const [form, setForm] = useState({ username: "", email: "", password: "" });
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -54,9 +54,9 @@ export default function Register() {
           <input
             className="w-full mb-4 p-3 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
             type="text"
-            name="username"
-            placeholder="Username"
-            value={form.username}
+            name="name"
+            placeholder="Name"
+            value={form.name}
             onChange={handleChange}
             required
             disabled={isLoading}
