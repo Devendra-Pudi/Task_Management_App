@@ -190,8 +190,6 @@ Experience TaskMagic in action:
 ### Authentication Endpoints
 - `POST /api/auth/register` - User registration
 - `POST /api/auth/login` - User login
-- `POST /api/auth/forgot-password` - Password recovery
-- `POST /api/auth/reset-password` - Reset password
 
 ### Task Endpoints
 - `GET /api/tasks` - Get all tasks
