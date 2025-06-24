@@ -20,7 +20,7 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const response = await api.get('/tasks');
-      console.log('Tasks response:', response.data); // Debug log
+      console.log('Tasks response:', response.data);
       if (response.data.success) {
         setTasks(response.data.data || []);
         setError(null);
@@ -39,16 +39,51 @@ const Dashboard = () => {
 
   const handleAddTask = async (taskData) => {
     try {
+      // Show loading toast
+      const loadingToast = toast.loading('Adding task...');
+      
+      // Add optimistic update
+      const optimisticTask = {
+        ...taskData,
+        _id: 'temp-' + Date.now(), // Temporary ID
+        createdBy: user.id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      // Update UI immediately
+      setTasks(currentTasks => [...currentTasks, optimisticTask]);
+      
+      // Close modal immediately for better UX
+      setIsModalOpen(false);
+
+      // Make API call
       const response = await api.post('/tasks', taskData);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+
       if (response.data.success) {
-        setTasks([...tasks, response.data.data]);
+        // Replace optimistic task with real task from server
+        setTasks(currentTasks => 
+          currentTasks.map(task => 
+            task._id === optimisticTask._id ? response.data.data : task
+          )
+        );
         toast.success('Task added successfully');
-        setIsModalOpen(false);
       } else {
+        // Remove optimistic task if failed
+        setTasks(currentTasks => 
+          currentTasks.filter(task => task._id !== optimisticTask._id)
+        );
         toast.error(response.data.error || 'Failed to add task');
       }
     } catch (err) {
       console.error('Error adding task:', err.response || err);
+      // Remove optimistic task if failed
+      setTasks(currentTasks => 
+        currentTasks.filter(task => task._id !== optimisticTask._id)
+      );
       toast.error(err.response?.data?.error || 'Failed to add task');
     }
   };
@@ -57,9 +92,11 @@ const Dashboard = () => {
     try {
       const response = await api.put(`/tasks/${taskId}`, updates);
       if (response.data.success) {
-        setTasks(tasks.map(task => 
-          task._id === taskId ? response.data.data : task
-        ));
+        setTasks(currentTasks => 
+          currentTasks.map(task => 
+            task._id === taskId ? response.data.data : task
+          )
+        );
         toast.success('Task updated successfully');
       }
     } catch (err) {
@@ -70,13 +107,29 @@ const Dashboard = () => {
 
   const handleDeleteTask = async (taskId) => {
     try {
+      // Show loading toast
+      const loadingToast = toast.loading('Deleting task...');
+      
+      // Optimistic delete
+      const taskToDelete = tasks.find(task => task._id === taskId);
+      setTasks(currentTasks => currentTasks.filter(task => task._id !== taskId));
+
       const response = await api.delete(`/tasks/${taskId}`);
+      
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+
       if (response.data.success) {
-        setTasks(tasks.filter(task => task._id !== taskId));
         toast.success('Task deleted successfully');
+      } else {
+        // Restore task if delete failed
+        setTasks(currentTasks => [...currentTasks, taskToDelete]);
+        toast.error('Failed to delete task');
       }
     } catch (err) {
       console.error('Error deleting task:', err);
+      // Restore task if delete failed
+      setTasks(currentTasks => [...currentTasks, taskToDelete]);
       toast.error('Failed to delete task');
     }
   };
