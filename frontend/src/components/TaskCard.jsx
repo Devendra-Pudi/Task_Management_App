@@ -1,92 +1,139 @@
-import { useState } from "react";
+import React, { useState, memo } from 'react';
+import { toast } from 'react-hot-toast';
 
-const TaskCard = ({ task, onUpdate, onDelete }) => {
-  const [edit, setEdit] = useState(false);
-  const [form, setForm] = useState({ ...task });
+const TaskCard = memo(({ task, onUpdate, onDelete, draggable, onDragStart }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(task.title);
+  const [editedDescription, setEditedDescription] = useState(task.description || '');
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onUpdate(task._id, form);
-    setEdit(false);
+  const handleUpdate = async (updates) => {
+    try {
+      await onUpdate(task._id, updates);
+    } catch (error) {
+      toast.error('Failed to update task');
+    }
   };
 
-  if (edit) {
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
+      await onDelete(task._id);
+    } catch (error) {
+      toast.error('Failed to delete task');
+      setIsDeleting(false);
+    }
+  };
+
+  const handleEditSave = async () => {
+    if (!editedTitle.trim()) {
+      toast.error('Title cannot be empty');
+      return;
+    }
+
+    try {
+      await handleUpdate({
+        title: editedTitle.trim(),
+        description: editedDescription.trim()
+      });
+      setIsEditing(false);
+    } catch (error) {
+      // Error is handled in handleUpdate
+    }
+  };
+
+  const priorityColors = {
+    Low: 'bg-green-100 text-green-800',
+    Medium: 'bg-yellow-100 text-yellow-800',
+    High: 'bg-red-100 text-red-800'
+  };
+
+  if (isEditing) {
     return (
-      <form className="bg-gray-50 rounded-lg p-4 mb-3 border" onSubmit={handleSubmit}>
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <input
-          className="w-full mb-2 p-2 border rounded"
-          name="title"
-          value={form.title}
-          onChange={handleChange}
+          type="text"
+          value={editedTitle}
+          onChange={(e) => setEditedTitle(e.target.value)}
+          className="w-full mb-2 p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Task title"
+          autoFocus
         />
         <textarea
-          className="w-full mb-2 p-2 border rounded"
-          name="description"
-          value={form.description}
-          onChange={handleChange}
+          value={editedDescription}
+          onChange={(e) => setEditedDescription(e.target.value)}
+          className="w-full mb-3 p-2 border rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          placeholder="Task description"
+          rows="2"
         />
-        <select
-          className="w-full mb-2 p-2 border rounded"
-          name="priority"
-          value={form.priority}
-          onChange={handleChange}
-        >
-          <option>Low</option>
-          <option>Medium</option>
-          <option>High</option>
-        </select>
-        <select
-          className="w-full mb-2 p-2 border rounded"
-          name="status"
-          value={form.status}
-          onChange={handleChange}
-        >
-          <option>To Do</option>
-          <option>In Progress</option>
-          <option>Done</option>
-        </select>
-        <div className="flex gap-2">
-          <button className="btn-primary flex-1" type="submit">
-            Save
-          </button>
+        <div className="flex justify-end gap-2">
           <button
-            className="flex-1 py-2 px-4 border rounded"
-            type="button"
-            onClick={() => setEdit(false)}
+            onClick={() => setIsEditing(false)}
+            className="px-3 py-1 text-gray-600 hover:text-gray-800"
           >
             Cancel
           </button>
+          <button
+            onClick={handleEditSave}
+            className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Save
+          </button>
         </div>
-      </form>
+      </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 rounded-lg p-4 mb-3 border border-gray-200 shadow hover:shadow-lg transition">
-      <div className="flex justify-between items-center mb-2">
-        <span className={`px-2 py-1 rounded text-xs font-semibold ${task.priority === 'High' ? 'bg-red-100 text-red-700' : task.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+    <div
+      className={`bg-white p-4 rounded-lg shadow-sm border border-gray-200 ${
+        isDeleting ? 'opacity-50' : ''
+      }`}
+      draggable={draggable}
+      onDragStart={onDragStart}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <h3 className="font-medium text-gray-900">{task.title}</h3>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsEditing(true)}
+            className="text-gray-400 hover:text-blue-600"
+            disabled={isDeleting}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
+          <button
+            onClick={handleDelete}
+            className="text-gray-400 hover:text-red-600"
+            disabled={isDeleting}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      {task.description && (
+        <p className="text-sm text-gray-600 mb-3">{task.description}</p>
+      )}
+      <div className="flex justify-between items-center">
+        <span
+          className={`text-xs font-medium px-2 py-1 rounded ${
+            priorityColors[task.priority]
+          }`}
+        >
           {task.priority}
         </span>
-        <span className="text-xs text-gray-400">{task.status}</span>
-      </div>
-      <h3 className="font-bold text-lg mb-1">{task.title}</h3>
-      <p className="text-gray-600 text-sm">{task.description}</p>
-      <div className="flex gap-2 mt-3">
-        <button className="btn-primary flex-1" onClick={() => setEdit(true)}>
-          Edit
-        </button>
-        <button
-          className="flex-1 py-2 px-4 border rounded text-red-600"
-          onClick={() => onDelete(task._id)}
-        >
-          Delete
-        </button>
+        <span className="text-xs text-gray-500">
+          {new Date(task.createdAt).toLocaleDateString()}
+        </span>
       </div>
     </div>
   );
-};
+});
+
+TaskCard.displayName = 'TaskCard';
 
 export default TaskCard;
