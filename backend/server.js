@@ -94,11 +94,14 @@ app.use((req, res, next) => {
   const origin = req.headers.origin;
 
   if (allowedOrigins.includes(origin)) {
+    console.log(`✅ CORS: Allowing request from origin: ${origin}`);
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
+  } else if (origin) {
+    console.log(`❌ CORS: Blocked request from unauthorized origin: ${origin}`);
   }
 
   if (req.method === 'OPTIONS') {
@@ -222,7 +225,7 @@ connectDB()
   .then(() => {
     const server = app.listen(PORT, () => {
       console.log(`🚀 Server is running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-      console.log(`🔒 CORS configured for origin: ${allowedOrigins}`);
+      console.log(`🔒 CORS configured for origins:`, allowedOrigins);
       console.log('👥 Trust proxy enabled:', app.get('trust proxy'));
     });
 
