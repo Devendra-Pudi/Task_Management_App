@@ -12,7 +12,7 @@ Experience TaskMagic in action:
 - **Live Site**: [TaskMagic App](https://taskmagic-app-devendra-pudi.netlify.app)
 - **Demo Account**:
   - Email: demo@taskmagic.com
-  - Password: demo12345
+  - Password: Demo@12345
 - Maybe start with your Own Account !!
 ![TaskMagic LandingPage](frontend/public/image.png)
 
