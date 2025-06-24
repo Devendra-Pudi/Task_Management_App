@@ -20,6 +20,11 @@ const api = axios.create({
   }
 });
 
+// Log the base URL in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('API Base URL:', api.defaults.baseURL);
+}
+
 // Add a request interceptor
 api.interceptors.request.use(
   (config) => {
@@ -27,22 +32,58 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    // Log requests in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Request:', {
+        method: config.method?.toUpperCase(),
+        url: config.url,
+        headers: config.headers,
+        data: config.data
+      });
+    }
     return config;
   },
   (error) => {
+    console.error('Request Error:', error);
     return Promise.reject(error);
   }
 );
 
 // Add a response interceptor
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Log successful responses in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('API Response:', {
+        status: response.status,
+        data: response.data
+      });
+    }
+    return response;
+  },
   (error) => {
-    console.error('API Error:', error);
+    // Enhanced error logging
+    console.error('API Error:', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      config: {
+        method: error.config?.method,
+        url: error.config?.url,
+        headers: error.config?.headers,
+        data: error.config?.data
+      }
+    });
+
+    // Handle authentication errors
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
+
     return Promise.reject(error);
   }
 );

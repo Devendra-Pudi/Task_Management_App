@@ -1,21 +1,88 @@
 const Task = require('../models/Task');
 
 exports.getTasks = async (req, res) => {
-  const tasks = await Task.find({ createdBy: req.user.id });
-  res.json(tasks);
+  try {
+    const tasks = await Task.find({ createdBy: req.user.id });
+    res.json({
+      success: true,
+      data: tasks
+    });
+  } catch (error) {
+    console.error('Error fetching tasks:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch tasks'
+    });
+  }
 };
 
 exports.createTask = async (req, res) => {
-  const task = await Task.create({ ...req.body, createdBy: req.user.id });
-  res.status(201).json(task);
+  try {
+    const task = await Task.create({ ...req.body, createdBy: req.user.id });
+    res.status(201).json({
+      success: true,
+      data: task
+    });
+  } catch (error) {
+    console.error('Error creating task:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create task'
+    });
+  }
 };
 
 exports.updateTask = async (req, res) => {
-  const task = await Task.findByIdAndUpdate(req.params.id, req.body, { new: true });
-  res.json(task);
+  try {
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, createdBy: req.user.id },
+      req.body,
+      { new: true }
+    );
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        error: 'Task not found or unauthorized'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: task
+    });
+  } catch (error) {
+    console.error('Error updating task:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update task'
+    });
+  }
 };
 
 exports.deleteTask = async (req, res) => {
-  await Task.findByIdAndDelete(req.params.id);
-  res.json({ success: true });
+  try {
+    const task = await Task.findOneAndDelete({
+      _id: req.params.id,
+      createdBy: req.user.id
+    });
+
+    if (!task) {
+      return res.status(404).json({
+        success: false,
+        error: 'Task not found or unauthorized'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Task deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting task:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete task'
+    });
+  }
 };
