@@ -1,14 +1,12 @@
 import React, { useState, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sparkles, LogOut, Home, Plus } from 'lucide-react';
+import { Menu, X, Sparkles, LogOut, Home } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import AddTaskModal from './AddTaskModal';
 import api from '../api';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showAddTaskModal, setShowAddTaskModal] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user, logout } = useContext(AuthContext);
@@ -18,18 +16,6 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
-  };
-
-  const handleAddTask = async (taskData) => {
-    try {
-      await api.createTask(taskData);
-      setShowAddTaskModal(false);
-      // Refresh the page to show the new task
-      window.location.reload();
-    } catch (error) {
-      console.error('Failed to add task:', error);
-      alert('Failed to add task. Please try again.');
-    }
   };
 
   const navItems = isDashboard
@@ -95,26 +81,15 @@ const Navbar = () => {
               {user ? (
                 <>
                   {isDashboard ? (
-                    <>
-                      <motion.button
-                        onClick={() => setShowAddTaskModal(true)}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-2 text-white bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 font-semibold px-4 py-2 rounded-full transition-all duration-300 shadow-lg hover:shadow-xl"
-                      >
-                        <Plus className="w-4 h-4" />
-                        Add Task
-                      </motion.button>
-                      <motion.button
-                        onClick={() => navigate('/')}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="flex items-center gap-2 text-gray-600 hover:text-blue-600 font-medium px-4 py-2 rounded-full border border-gray-200 hover:border-blue-600 transition-all duration-300"
-                      >
-                        <Home className="w-4 h-4" />
-                        Home
-                      </motion.button>
-                    </>
+                    <motion.button
+                      onClick={() => navigate('/')}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-2 text-gray-600 hover:text-blue-600 font-medium px-4 py-2 rounded-full border border-gray-200 hover:border-blue-600 transition-all duration-300"
+                    >
+                      <Home className="w-4 h-4" />
+                      Home
+                    </motion.button>
                   ) : (
                     <motion.button
                       onClick={() => navigate('/dashboard')}
@@ -223,28 +198,16 @@ const Navbar = () => {
                         Welcome, {user.username}
                       </div>
                       {isDashboard ? (
-                        <>
-                          <motion.button
-                            onClick={() => {
-                              setShowAddTaskModal(true);
-                              setIsOpen(false);
-                            }}
-                            className="flex items-center gap-2 text-green-600 hover:text-green-700 font-medium py-2"
-                          >
-                            <Plus className="w-4 h-4" />
-                            Add Task
-                          </motion.button>
-                          <motion.button
-                            onClick={() => {
-                              navigate('/');
-                              setIsOpen(false);
-                            }}
-                            className="flex items-center gap-2 text-gray-600 hover:text-blue-600 font-medium py-2"
-                          >
-                            <Home className="w-4 h-4" />
-                            Home
-                          </motion.button>
-                        </>
+                        <motion.button
+                          onClick={() => {
+                            navigate('/');
+                            setIsOpen(false);
+                          }}
+                          className="flex items-center gap-2 text-gray-600 hover:text-blue-600 font-medium py-2"
+                        >
+                          <Home className="w-4 h-4" />
+                          Home
+                        </motion.button>
                       ) : (
                         <motion.button
                           onClick={() => {
@@ -295,16 +258,6 @@ const Navbar = () => {
           </AnimatePresence>
         </div>
       </motion.nav>
-
-      {/* Add Task Modal */}
-      <AnimatePresence>
-        {showAddTaskModal && (
-          <AddTaskModal
-            onClose={() => setShowAddTaskModal(false)}
-            onAdd={handleAddTask}
-          />
-        )}
-      </AnimatePresence>
     </>
   );
 };
