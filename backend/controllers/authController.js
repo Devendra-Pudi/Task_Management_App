@@ -1,29 +1,127 @@
 const User = require('../models/User');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const generateToken = (user) => jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+// Generate JWT Token
+const generateToken = (userId) => {
+  return jwt.sign(
+    { userId },
+    process.env.JWT_SECRET,
+    { expiresIn: '30d' }
+  );
+};
 
+// @desc    Register a new user
+// @route   POST /api/auth/signup
+// @access  Public
 exports.signup = async (req, res) => {
   try {
-    const { username, email, password } = req.body;
-    const user = await User.create({ username, email, password });
-    const token = generateToken(user);
-    res.status(201).json({ user: { id: user._id, username, email }, token });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
+    const { name, email, password } = req.body;
+
+    // Validate input
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide all required fields'
+      });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+    if (user) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists'
+      });
+    }
+
+    // Create user
+    user = new User({
+      name,
+      email,
+      password
+    });
+
+    // Save user
+    await user.save();
+
+    // Generate token
+    const token = generateToken(user._id);
+
+    // Return user data (without password) and token
+    const userData = user.toObject();
+    delete userData.password;
+
+    res.status(201).json({
+      success: true,
+      data: {
+        user: userData,
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error in user registration',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
 
+// @desc    Login user
+// @route   POST /api/auth/login
+// @access  Public
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email and password'
+      });
     }
-    const token = generateToken(user);
-    res.json({ user: { id: user._id, username: user.username, email }, token });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
+
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    // Generate token
+    const token = generateToken(user._id);
+
+    // Return user data (without password) and token
+    const userData = user.toObject();
+    delete userData.password;
+
+    res.json({
+      success: true,
+      data: {
+        user: userData,
+        token
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error in user login',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 };
