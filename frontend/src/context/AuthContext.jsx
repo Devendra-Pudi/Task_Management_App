@@ -1,104 +1,86 @@
 import React, { createContext, useState, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
-import API from '../api';
+import { useNavigate } from 'react-router-dom';
+import api from '../api';
 
-// Create and export the context
-const AuthContext = createContext(null);
-export { AuthContext };
+export const AuthContext = createContext(null);
 
-// Export the provider as a named export
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // This helper function sets the token for all future API requests
-  const setAuthToken = (token) => {
-    if (token) {
-      API.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      localStorage.setItem('token', token);
-    } else {
-      delete API.defaults.headers.common['Authorization'];
-      localStorage.removeItem('token');
-    }
-  };
+  // Check if user is logged in on mount
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
-  // Check if a user is already logged in when the app starts
-  const loadUser = async () => {
+  const checkAuth = async () => {
     try {
       const token = localStorage.getItem('token');
-      if (token) {
-        setAuthToken(token);
-        const res = await API.get('/auth/me');
-        setUser(res.data);
+      if (!token) {
+        setLoading(false);
+        return;
       }
-    } catch (err) {
-      console.error('Error loading user:', err);
-      setAuthToken(null);
-      setUser(null);
+
+      const response = await api.get('/auth/me');
+      if (response.data.success) {
+        setUser(response.data.data);
+      } else {
+        localStorage.removeItem('token');
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      localStorage.removeItem('token');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    loadUser();
-  }, []);
-
-  const login = async (email, password) => {
+  const login = async (token) => {
     try {
-      const res = await API.post('/auth/login', { email, password });
-      const { token, user: userData } = res.data;
-      setAuthToken(token);
-      setUser(userData);
-      toast.success('Login successful!');
-      return userData;
-    } catch (err) {
-      console.error('Login error:', {
-        message: err.response?.data?.error || err.message,
-        status: err.response?.status,
-        data: err.response?.data
-      });
-      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Login failed. Please check your credentials.';
-      toast.error(errorMessage);
-      throw err;
-    }
-  };
-
-  const register = async (username, email, password) => {
-    try {
-      const res = await API.post('/auth/signup', { username, email, password });
-      toast.success('Registration successful! Please login.');
-      return res.data;
-    } catch (err) {
-      console.error('Registration error:', {
-        message: err.response?.data?.error || err.message,
-        status: err.response?.status,
-        data: err.response?.data
-      });
-      const errorMessage = err.response?.data?.error || err.response?.data?.message || 'Registration failed. Please try again.';
-      toast.error(errorMessage);
-      throw err;
+      // Store token
+      localStorage.setItem('token', token);
+      
+      // Get user data
+      const response = await api.get('/auth/me');
+      if (response.data.success) {
+        setUser(response.data.data);
+        navigate('/dashboard');
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Login failed:', error);
+      localStorage.removeItem('token');
+      return false;
     }
   };
 
   const logout = () => {
-    setAuthToken(null);
+    localStorage.removeItem('token');
     setUser(null);
-    toast.success('Logged out successfully');
+    navigate('/login');
   };
 
-  const authContextValue = {
+  const value = {
     user,
     loading,
     login,
-    register,
     logout,
     isAuthenticated: !!user
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
   return (
-    <AuthContext.Provider value={authContextValue}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
-}
+};
