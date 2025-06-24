@@ -6,6 +6,7 @@ import API from '../api';
 export default function Register() {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -13,14 +14,28 @@ export default function Register() {
   const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
     try {
-      await API.post("/auth/signup", form);
+      // Log the request in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Sending registration request to:', API.defaults.baseURL + '/auth/signup');
+      }
+      
+      const response = await API.post("/auth/signup", form);
+      console.log('Registration successful:', response.data);
       toast.success('Registration successful! Please login.');
       navigate("/login");
     } catch (err) {
+      console.error('Registration error:', {
+        message: err.response?.data?.error || err.response?.data?.message || err.message,
+        status: err.response?.status,
+        data: err.response?.data
+      });
       const errorMessage = err.response?.data?.error || err.response?.data?.message || "Registration failed";
       setError(errorMessage);
       toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -63,8 +78,12 @@ export default function Register() {
             onChange={handleChange}
             required
           />
-          <button className="btn-primary w-full mb-2" type="submit">
-            Register
+          <button 
+            className={`btn-primary w-full mb-2 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`} 
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? 'Registering...' : 'Register'}
           </button>
           <p className="text-center text-sm mt-4">
             Already have an account?{" "}
