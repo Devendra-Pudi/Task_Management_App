@@ -18,13 +18,52 @@ exports.getTasks = async (req, res) => {
 
 exports.createTask = async (req, res) => {
   try {
-    const task = await Task.create({ ...req.body, createdBy: req.user.id });
+    // Log the request data in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Creating task with data:', {
+        body: req.body,
+        user: req.user.id
+      });
+    }
+
+    // Validate required fields
+    if (!req.body.title) {
+      return res.status(400).json({
+        success: false,
+        error: 'Title is required'
+      });
+    }
+
+    // Create the task with user ID
+    const taskData = {
+      ...req.body,
+      createdBy: req.user.id,
+      status: req.body.status || 'To Do',
+      priority: req.body.priority || 'Medium'
+    };
+
+    const task = await Task.create(taskData);
+
+    // Log success in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Task created successfully:', task);
+    }
+
     res.status(201).json({
       success: true,
       data: task
     });
   } catch (error) {
     console.error('Error creating task:', error);
+    
+    // Handle validation errors
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        error: Object.values(error.errors).map(err => err.message).join(', ')
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: 'Failed to create task'
